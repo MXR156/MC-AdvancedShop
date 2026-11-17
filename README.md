@@ -74,12 +74,24 @@ hidden unique id, so a new shop that reuses a deleted shop's name doesn't take o
 | `/ashop link <shop>` / `/ashop unlink` | `ashop.admin` |
 | `/ashop edit <shop>` | `ashop.admin` |
 | `/ashop open <shop> [player]`: open a shop GUI (for NPC plugins, menus, console) | `ashop.command.open` (other players: `ashop.admin` or console) |
-| `/ashop settitle <shop> <MiniMessage title>` | `ashop.admin` |
+| `/ashop settitle <shop> <title>`: set the GUI title (`&` colour codes or MiniMessage) | `ashop.admin` |
 | `/ashop setrows <shop> <1-6>` | `ashop.admin` |
 | `/ashop setpermission <shop> [permission\|none]`: restrict who can open the shop | `ashop.admin` |
 | `/ashop delete <shop>`, `/ashop list`, `/ashop reload` | `ashop.admin` |
 
 `ashop.use` (everyone by default) is needed to buy and sell.
+
+### Shop titles
+
+A new shop's title is just its name. Set your own with colours using `&` codes, hex colours or MiniMessage:
+
+```
+/shop settitle tools &6&lTool Shop
+/shop settitle vip &#ff55ffVIP &7Exclusive
+/shop settitle farm <gradient:green:yellow>Farmers Market</gradient>
+```
+
+Colour codes also work in item display names and descriptions set in the editor.
 
 ### Restricting shops
 

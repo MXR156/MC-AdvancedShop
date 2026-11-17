@@ -59,13 +59,19 @@ public final class ShopManager {
         String key = id.toLowerCase(Locale.ROOT);
         Shop shop = shops.get(key);
         if (shop == null) {
-            shop = new Shop(key,
-                    plugin.getConfig().getString("defaults.title", "<dark_green>Shop").replace("<shop>", key),
-                    plugin.getConfig().getInt("defaults.rows", 6));
+            shop = new Shop(key, defaultTitle().replace("<shop>", key), plugin.getConfig().getInt("defaults.rows", 6));
             shops.put(key, shop);
             save(shop);
         }
         return shop;
+    }
+
+    /** The title format older versions used; shops still using it are switched to the new default. */
+    private static final String OLD_DEFAULT_TITLE = "<dark_green><bold>Shop</bold> <dark_gray>» <gray><shop>";
+
+    private String defaultTitle() {
+        String title = plugin.getConfig().getString("defaults.title", "<shop>");
+        return title.equals(OLD_DEFAULT_TITLE) ? "<shop>" : title;
     }
 
     public void delete(Shop shop) {
@@ -195,7 +201,9 @@ public final class ShopManager {
                 YamlConfiguration yaml = YamlConfiguration.loadConfiguration(file);
                 Shop shop = load(id, yaml);
                 shops.put(id, shop);
-                if (!yaml.contains("uid")) save(shop); // persist the generated uid
+                boolean oldTitle = shop.title().equals(OLD_DEFAULT_TITLE.replace("<shop>", id));
+                if (oldTitle) shop.title(defaultTitle().replace("<shop>", id));
+                if (!yaml.contains("uid") || oldTitle) save(shop); // persist generated uid / migrated title
             } catch (Exception e) {
                 plugin.getLogger().log(Level.SEVERE, "Failed to load shop " + file.getName(), e);
             }

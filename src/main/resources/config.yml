@@ -1,12 +1,14 @@
 # ---------------------------------------------------------------
 #  AdvancedShop configuration
 #  All text uses MiniMessage: https://docs.advntr.dev/minimessage/format.html
+#  Legacy colour codes also work everywhere: &6 &l &#ff8800 ...
 # ---------------------------------------------------------------
 
 # Default settings for newly created shops.
 defaults:
   rows: 6
-  title: "<dark_green><bold>Shop</bold> <dark_gray>» <gray><shop>"
+  # <shop> is replaced with the shop's name. Change a shop's title with /shop settitle.
+  title: "<shop>"
 
 # How bought permissions are granted.
 #   vault   -> uses the Vault permission hook (works with LuckPerms etc.)
