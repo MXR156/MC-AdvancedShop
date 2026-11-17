@@ -130,7 +130,26 @@ public final class ShopManager {
         }
     }
 
+    /** Links (or unlinks, with null) a container. Both halves of a double chest are always linked together. */
     public void link(Block block, @Nullable Shop shop) {
+        Block other = partner(block);
+        linkSingle(block, shop);
+        if (other != null) linkSingle(other, shop);
+    }
+
+    /** @return the other half of a double chest, or null for single chests and barrels. */
+    public static @Nullable Block partner(Block block) {
+        if (!(block.getBlockData() instanceof org.bukkit.block.data.type.Chest data)
+                || data.getType() == org.bukkit.block.data.type.Chest.Type.SINGLE) return null;
+        if (!(block.getState(false) instanceof org.bukkit.block.Chest chest)) return null;
+        if (!(chest.getInventory().getHolder(false) instanceof org.bukkit.block.DoubleChest dc)) return null;
+        for (org.bukkit.inventory.InventoryHolder side : new org.bukkit.inventory.InventoryHolder[]{dc.getLeftSide(false), dc.getRightSide(false)}) {
+            if (side instanceof org.bukkit.block.Chest half && !half.getBlock().equals(block)) return half.getBlock();
+        }
+        return null;
+    }
+
+    private void linkSingle(Block block, @Nullable Shop shop) {
         BlockState state = block.getState();
         if (!(state instanceof TileState tile)) return;
         var pdc = tile.getPersistentDataContainer();

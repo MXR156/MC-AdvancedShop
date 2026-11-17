@@ -9,7 +9,6 @@ import io.github.mxr156.advancedshop.util.Text;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.type.Chest;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -27,7 +26,6 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -37,7 +35,6 @@ public final class ChestListener implements Listener {
 
     /** Matches a chest renamed (in an anvil) to e.g. "[ashop.tools]". */
     private static final Pattern NAME_PATTERN = Pattern.compile("^\\s*\\[ashop\\.([A-Za-z0-9_-]{1,32})]\\s*$");
-    private static final List<BlockFace> SIDES = List.of(BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST);
 
     private final AdvancedShopPlugin plugin;
 
@@ -58,13 +55,12 @@ public final class ChestListener implements Listener {
             plugin.getServer().getScheduler().runTask(plugin, () -> {
                 if (!ShopManager.isShopContainerType(block)) return;
                 Shop shop = plugin.shops().getOrCreate(shopName);
-                plugin.shops().link(block, shop);
-                splitDoubleChests(block);
+                plugin.shops().link(block, shop); // also links the other half if it merged into a double chest
                 plugin.messages().send(player, "shop-created", Placeholder.unparsed("shop", shop.id()));
             });
         } else {
-            // Stop normal chests merging with a shop chest into a double chest.
-            plugin.getServer().getScheduler().runTask(plugin, () -> splitDoubleChests(block));
+            // A normal chest placed next to a single shop chest must not merge into it.
+            plugin.getServer().getScheduler().runTask(plugin, () -> splitFromShop(block));
         }
     }
 
@@ -77,19 +73,16 @@ public final class ChestListener implements Listener {
         return matcher.matches() ? matcher.group(1).toLowerCase(Locale.ROOT) : null;
     }
 
-    /** Shop chests must stay single chests; un-merge {@code block} from any neighbour if a shop is involved. */
-    private void splitDoubleChests(Block block) {
-        if (!(block.getBlockData() instanceof Chest data) || data.getType() == Chest.Type.SINGLE) return;
-        for (BlockFace face : SIDES) {
-            Block other = block.getRelative(face);
-            if (!(other.getBlockData() instanceof Chest otherData) || otherData.getType() == Chest.Type.SINGLE) continue;
-            if (other.getType() != block.getType()) continue;
-            if (plugin.shops().shopAt(block) == null && plugin.shops().shopAt(other) == null) continue;
-            data.setType(Chest.Type.SINGLE);
-            otherData.setType(Chest.Type.SINGLE);
-            block.setBlockData(data, false);
-            other.setBlockData(otherData, false);
-        }
+    /** If a freshly placed normal chest merged with a shop chest, split them back into two single chests. */
+    private void splitFromShop(Block block) {
+        if (plugin.shops().shopAt(block) != null) return;
+        Block other = ShopManager.partner(block);
+        if (other == null || plugin.shops().shopAt(other) == null) return;
+        if (!(block.getBlockData() instanceof Chest data) || !(other.getBlockData() instanceof Chest otherData)) return;
+        data.setType(Chest.Type.SINGLE);
+        otherData.setType(Chest.Type.SINGLE);
+        block.setBlockData(data, false);
+        other.setBlockData(otherData, false);
     }
 
     // ---------------------------------------------------------------- opening
@@ -98,7 +91,13 @@ public final class ChestListener implements Listener {
     public void onInteract(PlayerInteractEvent event) {
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK || event.getClickedBlock() == null) return;
         Block block = event.getClickedBlock();
-        if (plugin.shops().shopIdAt(block) == null) return;
+        if (plugin.shops().shopIdAt(block) == null) {
+            // Double chest where only the other half is linked (e.g. linked before both halves were tagged).
+            Block other = ShopManager.partner(block);
+            Shop partnerShop = other == null ? null : plugin.shops().shopAt(other);
+            if (partnerShop == null) return;
+            plugin.shops().link(block, partnerShop);
+        }
         Shop shop = plugin.shops().shopAt(block);
         if (shop == null) {
             // Orphaned chest (its shop was deleted): clean the tag and let it open like a normal chest.
