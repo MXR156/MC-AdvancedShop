@@ -66,5 +66,7 @@ messages:
   chat-expired: "<gray>Input timed out."
   invalid-number: "<red>That isn't a valid number."
   item-added: "<green>Added item to slot <white><slot></white>. Click it to configure prices."
+  item-moved: "<green>Item moved to slot <white><slot></white>."
+  move-occupied: "<red>That slot is already taken. Pick a green slot."
   item-deleted: "<yellow>Shop item removed."
   list-header: "<green>Shops (<count>): <white><shops>"

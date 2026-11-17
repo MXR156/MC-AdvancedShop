@@ -31,7 +31,7 @@ public final class ItemEditorMenu extends Menu {
 
     private final AdvancedShopPlugin plugin;
     private final Shop shop;
-    private int slot;
+    private final int slot;
 
     public ItemEditorMenu(AdvancedShopPlugin plugin, Shop shop, int slot) {
         this.plugin = plugin;
@@ -105,7 +105,7 @@ public final class ItemEditorMenu extends Menu {
                 "<gray>Extra lore lines (MiniMessage)."));
 
         inventory.setItem(MOVE, Items.button(Material.COMPASS, "<white>Move to slot",
-                "<gray>Current slot: <white>" + slot, "<yellow>Click <gray>to type a new slot (0-" + (shop.size() - 1) + ")"));
+                "<gray>Current slot: <white>" + slot, "<yellow>Click <gray>to pick it up and place it in a free slot"));
 
         inventory.setItem(BACK, Items.button(Material.ARROW, "<gray>« Back to shop"));
         inventory.setItem(DELETE, Items.button(Material.LAVA_BUCKET, "<red>Delete item", "<yellow>Shift-click <gray>to confirm"));
@@ -203,7 +203,7 @@ public final class ItemEditorMenu extends Menu {
                     prompt(player, "Type the display name (MiniMessage, e.g. <gold>VIP Rank):", item::displayName);
                 }
             }
-            case MOVE -> prompt(player, "Type the target slot (0-" + (shop.size() - 1) + "):", input -> move(player, input));
+            case MOVE -> new MoveItemMenu(plugin, shop, slot).open(player);
             case BACK -> new ShopEditorMenu(plugin, shop).open(player);
             case DELETE -> {
                 if (click.isShiftClick()) {
@@ -230,22 +230,6 @@ public final class ItemEditorMenu extends Menu {
                 if (!value.isEmpty()) list.add(value);
             });
         }
-    }
-
-    private void move(Player player, String input) {
-        int target;
-        try {
-            target = Integer.parseInt(input.trim());
-        } catch (NumberFormatException e) {
-            plugin.messages().send(player, "invalid-number");
-            return;
-        }
-        if (target < 0 || target >= shop.size() || target == slot) return;
-        ShopItem moving = shop.item(slot);
-        ShopItem other = shop.item(target);
-        shop.setItem(target, moving);
-        shop.setItem(slot, other); // swap
-        slot = target;
     }
 
     private double parsePrice(Player player, String input, double fallback) {
