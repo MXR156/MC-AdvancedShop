@@ -147,6 +147,7 @@ public final class ShopManager {
 
     private Shop load(String id, YamlConfiguration yaml) {
         Shop shop = new Shop(id, yaml.getString("title", id), yaml.getInt("rows", 6));
+        shop.permission(yaml.getString("permission"));
         ConfigurationSection items = yaml.getConfigurationSection("items");
         if (items == null) return shop;
         for (String key : items.getKeys(false)) {
@@ -178,6 +179,7 @@ public final class ShopManager {
         YamlConfiguration yaml = new YamlConfiguration();
         yaml.set("title", shop.title());
         yaml.set("rows", shop.rows());
+        yaml.set("permission", shop.permission());
         for (Map.Entry<Integer, ShopItem> entry : shop.items().entrySet()) {
             ShopItem item = entry.getValue();
             String path = "items." + entry.getKey() + ".";

@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 public final class ShopCommand implements BasicCommand {
 
     private static final List<String> ADMIN_SUBS =
-            List.of("create", "link", "unlink", "delete", "edit", "open", "list", "settitle", "setrows", "reload", "help");
+            List.of("create", "link", "unlink", "delete", "edit", "open", "list", "settitle", "setrows", "setpermission", "reload", "help");
 
     private final AdvancedShopPlugin plugin;
 
@@ -110,6 +110,27 @@ public final class ShopCommand implements BasicCommand {
                 msg.send(sender, "rows-set", Placeholder.unparsed("shop", shop.id()),
                         Placeholder.unparsed("rows", String.valueOf(shop.rows())));
             }
+            case "setpermission" -> {
+                Shop shop = shopArg(sender, args, "/ashop setpermission <shop> [permission|none]");
+                if (shop == null) return;
+                String node = args.length >= 3 ? args[2] : "ashop.shop." + shop.id();
+                if (node.equalsIgnoreCase("none") || node.equalsIgnoreCase("off")) {
+                    shop.permission(null);
+                    msg.send(sender, "permission-cleared", Placeholder.unparsed("shop", shop.id()));
+                } else {
+                    shop.permission(node);
+                    msg.send(sender, "permission-set", Placeholder.unparsed("shop", shop.id()),
+                            Placeholder.unparsed("permission", node));
+                }
+                plugin.shops().save(shop);
+                // Kick out viewers who no longer have access.
+                for (Player player : Bukkit.getOnlinePlayers()) {
+                    if (player.getOpenInventory().getTopInventory().getHolder(false) instanceof ShopMenu menu
+                            && menu.shop() == shop && !shop.canAccess(player)) {
+                        player.closeInventory();
+                    }
+                }
+            }
             case "reload" -> {
                 plugin.reload();
                 msg.send(sender, "reloaded");
@@ -136,6 +157,11 @@ public final class ShopCommand implements BasicCommand {
             target = player;
         } else {
             msg.send(sender, "player-only");
+            return;
+        }
+        if (!shop.canAccess(target)) {
+            msg.send(target, "shop-locked", Placeholder.unparsed("shop", shop.id()));
+            if (target != sender) msg.send(sender, "shop-locked", Placeholder.unparsed("shop", shop.id()));
             return;
         }
         new ShopMenu(plugin, shop, target).open(target);
@@ -185,6 +211,7 @@ public final class ShopCommand implements BasicCommand {
                 "<white>/ashop open <shop> [player] <gray>- open a shop (for NPCs/console)",
                 "<white>/ashop settitle <shop> <title> <gray>- MiniMessage title",
                 "<white>/ashop setrows <shop> <1-6>",
+                "<white>/ashop setpermission <shop> [permission|none] <gray>- restrict who can open it",
                 "<white>/ashop delete <shop> <gray>| <white>list <gray>| <white>reload"
         };
         for (String line : lines) sender.sendMessage(Text.mm(line.replace("<shop>", "\\<shop>").replace("<name>", "\\<name>")
@@ -201,7 +228,7 @@ public final class ShopCommand implements BasicCommand {
             return subs.stream().filter(s -> s.startsWith(prefix)).toList();
         }
         String sub = args[0].toLowerCase(Locale.ROOT);
-        if (args.length == 2 && List.of("create", "link", "delete", "edit", "open", "settitle", "setrows").contains(sub)) {
+        if (args.length == 2 && List.of("create", "link", "delete", "edit", "open", "settitle", "setrows", "setpermission").contains(sub)) {
             String prefix = args[1].toLowerCase(Locale.ROOT);
             return plugin.shops().all().stream().map(Shop::id).filter(id -> id.startsWith(prefix)).toList();
         }
@@ -211,6 +238,10 @@ public final class ShopCommand implements BasicCommand {
                     .filter(n -> n.toLowerCase(Locale.ROOT).startsWith(prefix)).toList();
         }
         if (args.length == 3 && sub.equals("setrows")) return List.of("1", "2", "3", "4", "5", "6");
+        if (args.length == 3 && sub.equals("setpermission")) {
+            Shop shop = plugin.shops().get(args[1]);
+            return shop == null ? List.of("none") : List.of("ashop.shop." + shop.id(), "none");
+        }
         return List.of();
     }
 }

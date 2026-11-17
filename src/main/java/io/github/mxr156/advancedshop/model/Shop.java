@@ -11,6 +11,7 @@ public final class Shop {
     private final String id;
     private String title;
     private int rows;
+    private @Nullable String permission;
     private final Map<Integer, ShopItem> items = new TreeMap<>();
 
     public Shop(String id, String title, int rows) {
@@ -27,6 +28,15 @@ public final class Shop {
     public int rows() { return rows; }
     public void rows(int rows) { this.rows = Math.max(1, Math.min(6, rows)); }
     public int size() { return rows * 9; }
+
+    /** Permission needed to open this shop, or null if anyone with ashop.use may open it. */
+    public @Nullable String permission() { return permission; }
+    public void permission(@Nullable String permission) { this.permission = permission; }
+
+    /** Admins always have access; otherwise the shop permission (if any) is required. */
+    public boolean canAccess(org.bukkit.permissions.Permissible who) {
+        return who.hasPermission("ashop.admin") || permission == null || who.hasPermission(permission);
+    }
 
     public Map<Integer, ShopItem> items() { return items; }
     public @Nullable ShopItem item(int slot) { return items.get(slot); }

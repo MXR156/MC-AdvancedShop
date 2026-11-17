@@ -66,9 +66,22 @@ non-admins, blown up or used by hoppers, and they never merge into double chests
 | `/ashop open <shop> [player]`: open a shop GUI (for NPC plugins, menus, console) | `ashop.command.open` (other players: `ashop.admin` or console) |
 | `/ashop settitle <shop> <MiniMessage title>` | `ashop.admin` |
 | `/ashop setrows <shop> <1-6>` | `ashop.admin` |
+| `/ashop setpermission <shop> [permission\|none]`: restrict who can open the shop | `ashop.admin` |
 | `/ashop delete <shop>`, `/ashop list`, `/ashop reload` | `ashop.admin` |
 
 `ashop.use` (everyone by default) is needed to buy and sell.
+
+### Restricting shops
+
+By default anyone with `ashop.use` can open a shop. To limit one:
+
+- `/ashop setpermission vip`: the `vip` shop now requires `ashop.shop.vip`.
+- `/ashop setpermission vip myserver.rank.gold`: use any permission node you like.
+- `/ashop setpermission vip none`: open it to everyone again.
+
+Admins (`ashop.admin`) can always open every shop. The check also applies to `/ashop open`, so NPCs
+can't be used to get around it. A restricted shop can be combined with a `PERMISSION` item in another
+shop, which lets players buy access to it.
 
 ## NPC shopkeepers
 

@@ -116,6 +116,8 @@ public final class ChestListener implements Listener {
         }
         if (player.isSneaking() && player.hasPermission("ashop.admin")) {
             new ShopEditorMenu(plugin, shop).open(player);
+        } else if (!shop.canAccess(player)) {
+            plugin.messages().send(player, "shop-locked", Placeholder.unparsed("shop", shop.id()));
         } else if (player.hasPermission("ashop.use")) {
             new ShopMenu(plugin, shop, player).open(player);
         } else {
