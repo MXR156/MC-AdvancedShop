@@ -76,10 +76,10 @@ There's no built-in NPC support yet, but any NPC plugin that runs console comman
 For example, with Citizens:
 
 ```
-/npc command add -p ashop open tools %player%
+/npc command add ashop open tools <p>
 ```
 
-(Check your Citizens version's docs for how it runs commands as console.)
+(Citizens runs these as console by default and replaces `<p>` with the clicking player. Check the Citizens docs for your version.)
 
 ## Data
 
