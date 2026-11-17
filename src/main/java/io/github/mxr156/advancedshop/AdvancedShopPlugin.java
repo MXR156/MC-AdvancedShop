@@ -36,7 +36,7 @@ public final class AdvancedShopPlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new MenuListener(), this);
         getServer().getPluginManager().registerEvents(chatInput, this);
 
-        registerCommand("ashop", "AdvancedShop admin and utility commands", List.of("advancedshop"), new ShopCommand(this));
+        registerCommand("ashop", "AdvancedShop admin and utility commands", List.of("shop", "advancedshop"), new ShopCommand(this));
 
         // Economy plugins register their Vault provider during their own enable, so hook one tick later.
         getServer().getScheduler().runTask(this, this::hookEconomy);

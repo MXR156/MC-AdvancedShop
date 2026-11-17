@@ -66,6 +66,8 @@ hidden unique id, so a new shop that reuses a deleted shop's name doesn't take o
 
 ## Commands
 
+`/shop` and `/advancedshop` work as aliases of `/ashop`, e.g. `/shop create tools`.
+
 | Command | Permission |
 | --- | --- |
 | `/ashop create <shop>`: make the chest you look at a shop | `ashop.admin` |

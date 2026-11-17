@@ -201,7 +201,7 @@ public final class ShopCommand implements BasicCommand {
 
     private void help(CommandSender sender) {
         String[] lines = {
-                "<green><bold>AdvancedShop</bold> <gray>commands",
+                "<green><bold>AdvancedShop</bold> <gray>commands <dark_gray>(/ashop and /shop both work)",
                 "<gray>Rename a chest to <white>[ashop.<name>]</white> in an anvil and place it to make a shop.",
                 "<gray>Sneak + right-click a shop chest to edit it.",
                 "<white>/ashop create <shop> <gray>- turn the chest you look at into a shop",
