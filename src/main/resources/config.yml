@@ -41,6 +41,7 @@ messages:
   shop-unlinked: "<yellow>Chest unlinked from shop <white><shop></white>."
   shop-deleted: "<yellow>Shop <white><shop></white> deleted."
   shop-chest-broken: "<yellow>Shop chest for <white><shop></white> removed. Shop data is kept."
+  sneak-to-break: "<yellow>This is a shop chest. Crouch while breaking it to remove it."
   cannot-break: "<red>You can't break a shop chest."
   invalid-name: "<red>Shop names may only contain a-z, 0-9, _ and - (max 32 chars)."
   not-looking-at-chest: "<red>Look at a chest, trapped chest or barrel (within 5 blocks)."

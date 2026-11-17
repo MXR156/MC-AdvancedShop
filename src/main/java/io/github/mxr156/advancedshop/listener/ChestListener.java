@@ -137,6 +137,12 @@ public final class ChestListener implements Listener {
             plugin.messages().send(player, "cannot-break");
             return;
         }
+        if (!player.isSneaking()) {
+            // Admins must crouch to break a shop chest, so they don't remove one by accident.
+            event.setCancelled(true);
+            plugin.messages().send(player, "sneak-to-break");
+            return;
+        }
         plugin.messages().send(player, "shop-chest-broken", Placeholder.unparsed("shop", id));
     }
 

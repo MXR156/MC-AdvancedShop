@@ -44,7 +44,7 @@ The plugin jar is written to `target/AdvancedShop-<version>.jar`. Drop it in you
 | Move to slot | Moves the entry (swaps with whatever is there) |
 | Delete | Shift-click to remove the entry |
 
-Several chests can point at the same shop (`/ashop link <shop>`). Shop chests can't be broken by
+Several chests can point at the same shop (`/ashop link <shop>`). Admins must crouch to break a shop chest (so it can't happen by accident). Shop chests can't be broken by
 non-admins, blown up or used by hoppers, and they never merge into double chests.
 
 ## Using a shop (players)
