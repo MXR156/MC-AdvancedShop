@@ -84,7 +84,7 @@ public final class ChestListener implements Listener {
             Block other = block.getRelative(face);
             if (!(other.getBlockData() instanceof Chest otherData) || otherData.getType() == Chest.Type.SINGLE) continue;
             if (other.getType() != block.getType()) continue;
-            if (plugin.shops().shopIdAt(block) == null && plugin.shops().shopIdAt(other) == null) continue;
+            if (plugin.shops().shopAt(block) == null && plugin.shops().shopAt(other) == null) continue;
             data.setType(Chest.Type.SINGLE);
             otherData.setType(Chest.Type.SINGLE);
             block.setBlockData(data, false);
@@ -97,23 +97,20 @@ public final class ChestListener implements Listener {
     @EventHandler(priority = EventPriority.HIGH)
     public void onInteract(PlayerInteractEvent event) {
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK || event.getClickedBlock() == null) return;
-        String id = plugin.shops().shopIdAt(event.getClickedBlock());
-        if (id == null) return;
+        Block block = event.getClickedBlock();
+        if (plugin.shops().shopIdAt(block) == null) return;
+        Shop shop = plugin.shops().shopAt(block);
+        if (shop == null) {
+            // Orphaned chest (its shop was deleted): clean the tag and let it open like a normal chest.
+            plugin.shops().link(block, null);
+            return;
+        }
 
         event.setUseInteractedBlock(Event.Result.DENY);
         event.setUseItemInHand(Event.Result.DENY);
         if (event.getHand() != EquipmentSlot.HAND) return; // only handle the main hand once
 
         Player player = event.getPlayer();
-        Shop shop = plugin.shops().get(id);
-        if (shop == null) {
-            // Shop was deleted; turn this back into a normal container for admins.
-            if (player.hasPermission("ashop.admin")) {
-                plugin.shops().link(event.getClickedBlock(), null);
-                plugin.messages().send(player, "shop-not-found", Placeholder.unparsed("shop", id));
-            }
-            return;
-        }
         if (player.isSneaking() && player.hasPermission("ashop.admin")) {
             new ShopEditorMenu(plugin, shop).open(player);
         } else if (!shop.canAccess(player)) {
@@ -129,8 +126,9 @@ public final class ChestListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onBreak(BlockBreakEvent event) {
-        String id = plugin.shops().shopIdAt(event.getBlock());
-        if (id == null) return;
+        Shop shop = plugin.shops().shopAt(event.getBlock());
+        if (shop == null) return; // normal or orphaned chest: break as usual
+        String id = shop.id();
         Player player = event.getPlayer();
         if (!player.hasPermission("ashop.admin")) {
             event.setCancelled(true);
@@ -148,12 +146,12 @@ public final class ChestListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onEntityExplode(EntityExplodeEvent event) {
-        event.blockList().removeIf(block -> plugin.shops().shopIdAt(block) != null);
+        event.blockList().removeIf(block -> plugin.shops().shopAt(block) != null);
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onBlockExplode(BlockExplodeEvent event) {
-        event.blockList().removeIf(block -> plugin.shops().shopIdAt(block) != null);
+        event.blockList().removeIf(block -> plugin.shops().shopAt(block) != null);
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -164,7 +162,7 @@ public final class ChestListener implements Listener {
     }
 
     private boolean isShop(org.bukkit.Location location) {
-        return location != null && plugin.shops().shopIdAt(location.getBlock()) != null;
+        return location != null && plugin.shops().shopAt(location.getBlock()) != null;
     }
 
 }

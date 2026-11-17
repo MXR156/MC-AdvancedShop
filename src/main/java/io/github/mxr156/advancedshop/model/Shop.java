@@ -9,6 +9,8 @@ import java.util.TreeMap;
 public final class Shop {
 
     private final String id;
+    /** Random id so chests of a deleted shop don't come back if a new shop reuses the name. */
+    private String uid = java.util.UUID.randomUUID().toString();
     private String title;
     private int rows;
     private @Nullable String permission;
@@ -21,6 +23,9 @@ public final class Shop {
     }
 
     public String id() { return id; }
+
+    public String uid() { return uid; }
+    public void uid(String uid) { this.uid = uid; }
 
     public String title() { return title; }
     public void title(String title) { this.title = title; }

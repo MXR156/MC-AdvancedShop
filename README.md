@@ -47,6 +47,10 @@ The plugin jar is written to `target/AdvancedShop-<version>.jar`. Drop it in you
 Several chests can point at the same shop (`/ashop link <shop>`). Admins must crouch to break a shop chest (so it can't happen by accident). Shop chests can't be broken by
 non-admins, blown up or used by hoppers, and they never merge into double chests.
 
+Deleting a shop with `/ashop delete <shop>` turns its chests back into normal chests. Chests in loaded
+chunks are converted straight away, and the rest when they are next opened or broken. Each shop has a
+hidden unique id, so a new shop that reuses a deleted shop's name doesn't take over its old chests.
+
 ## Using a shop (players)
 
 | Click | Action |

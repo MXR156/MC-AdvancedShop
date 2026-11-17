@@ -35,12 +35,14 @@ public final class ShopManager {
     private final AdvancedShopPlugin plugin;
     private final File folder;
     private final NamespacedKey shopKey;
+    private final NamespacedKey uidKey;
     private final Map<String, Shop> shops = new LinkedHashMap<>();
 
     public ShopManager(AdvancedShopPlugin plugin) {
         this.plugin = plugin;
         this.folder = new File(plugin.getDataFolder(), "shops");
         this.shopKey = new NamespacedKey(plugin, "shop");
+        this.uidKey = new NamespacedKey(plugin, "shop_uid");
     }
 
     // ------------------------------------------------------------------ lookup
@@ -68,6 +70,7 @@ public final class ShopManager {
 
     public void delete(Shop shop) {
         shops.remove(shop.id());
+        cleanLoadedChests();
         File file = file(shop.id());
         if (file.exists() && !file.delete()) {
             plugin.getLogger().warning("Could not delete " + file);
@@ -87,7 +90,10 @@ public final class ShopManager {
         };
     }
 
-    /** @return the shop id stored on this block, or null if it isn't a shop container. */
+    /**
+     * @return the shop id stored on this block, or null if it isn't tagged. The shop may no longer
+     * exist; use {@link #shopAt(Block)} to check that.
+     */
     public @Nullable String shopIdAt(Block block) {
         if (!isShopContainerType(block)) return null;
         BlockState state = block.getState(false);
@@ -95,16 +101,46 @@ public final class ShopManager {
         return tile.getPersistentDataContainer().get(shopKey, PersistentDataType.STRING);
     }
 
+    /** @return the live shop linked to this block, or null if none (or the shop was deleted). */
     public @Nullable Shop shopAt(Block block) {
-        String id = shopIdAt(block);
-        return id == null ? null : get(id);
+        if (!isShopContainerType(block)) return null;
+        if (!(block.getState(false) instanceof TileState tile)) return null;
+        var pdc = tile.getPersistentDataContainer();
+        String id = pdc.get(shopKey, PersistentDataType.STRING);
+        if (id == null) return null;
+        Shop shop = get(id);
+        if (shop == null) return null;
+        String uid = pdc.get(uidKey, PersistentDataType.STRING);
+        return uid == null || uid.equals(shop.uid()) ? shop : null;
+    }
+
+    /** True if the block is tagged as a shop chest but its shop no longer exists. */
+    public boolean isOrphaned(Block block) {
+        return shopIdAt(block) != null && shopAt(block) == null;
+    }
+
+    /** Removes stale shop tags from chests in currently loaded chunks. Others are cleaned when touched. */
+    public void cleanLoadedChests() {
+        for (org.bukkit.World world : Bukkit.getWorlds()) {
+            for (org.bukkit.Chunk chunk : world.getLoadedChunks()) {
+                for (BlockState state : chunk.getTileEntities(false)) {
+                    if (state instanceof TileState && isOrphaned(state.getBlock())) link(state.getBlock(), null);
+                }
+            }
+        }
     }
 
     public void link(Block block, @Nullable Shop shop) {
         BlockState state = block.getState();
         if (!(state instanceof TileState tile)) return;
-        if (shop == null) tile.getPersistentDataContainer().remove(shopKey);
-        else tile.getPersistentDataContainer().set(shopKey, PersistentDataType.STRING, shop.id());
+        var pdc = tile.getPersistentDataContainer();
+        if (shop == null) {
+            pdc.remove(shopKey);
+            pdc.remove(uidKey);
+        } else {
+            pdc.set(shopKey, PersistentDataType.STRING, shop.id());
+            pdc.set(uidKey, PersistentDataType.STRING, shop.uid());
+        }
         tile.update(true, false);
     }
 
@@ -137,7 +173,10 @@ public final class ShopManager {
         for (File file : files) {
             String id = file.getName().substring(0, file.getName().length() - 4).toLowerCase(Locale.ROOT);
             try {
-                shops.put(id, load(id, YamlConfiguration.loadConfiguration(file)));
+                YamlConfiguration yaml = YamlConfiguration.loadConfiguration(file);
+                Shop shop = load(id, yaml);
+                shops.put(id, shop);
+                if (!yaml.contains("uid")) save(shop); // persist the generated uid
             } catch (Exception e) {
                 plugin.getLogger().log(Level.SEVERE, "Failed to load shop " + file.getName(), e);
             }
@@ -148,6 +187,8 @@ public final class ShopManager {
     private Shop load(String id, YamlConfiguration yaml) {
         Shop shop = new Shop(id, yaml.getString("title", id), yaml.getInt("rows", 6));
         shop.permission(yaml.getString("permission"));
+        String uid = yaml.getString("uid");
+        if (uid != null) shop.uid(uid);
         ConfigurationSection items = yaml.getConfigurationSection("items");
         if (items == null) return shop;
         for (String key : items.getKeys(false)) {
@@ -177,6 +218,7 @@ public final class ShopManager {
 
     public void save(Shop shop) {
         YamlConfiguration yaml = new YamlConfiguration();
+        yaml.set("uid", shop.uid());
         yaml.set("title", shop.title());
         yaml.set("rows", shop.rows());
         yaml.set("permission", shop.permission());
