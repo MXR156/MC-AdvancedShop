@@ -1,0 +1,66 @@
+# ---------------------------------------------------------------
+#  AdvancedShop configuration
+#  All text uses MiniMessage: https://docs.advntr.dev/minimessage/format.html
+# ---------------------------------------------------------------
+
+# Default settings for newly created shops.
+defaults:
+  rows: 6
+  title: "<dark_green><bold>Shop</bold> <dark_gray>» <gray><shop>"
+
+# How bought permissions are granted.
+#   vault   -> uses the Vault permission hook (works with LuckPerms etc.)
+#   command -> runs the console command below (use %player% and %permission%)
+permission-grant:
+  mode: vault
+  command: "lp user %player% permission set %permission% true"
+
+# Seconds a chat prompt (e.g. "type the buy price") waits before expiring.
+chat-input-timeout: 60
+
+# Lore added to items as shown in the shop.
+lore:
+  buy: "<gray>Buy: <green><price></green> <dark_gray>(Left-click, Shift = x<stack>)"
+  sell: "<gray>Sell: <gold><price></gold> <dark_gray>(Right-click, Shift = all)"
+  buy-disabled: "<dark_gray>Not for sale"
+  sell-disabled: "<dark_gray>Cannot be sold here"
+  amount: "<gray>Amount: <white><amount>"
+  owned: "<green>✔ You already own this"
+  permission-item: "<aqua>Permission / perk"
+  command-item: "<light_purple>Special reward"
+  edit-hint: "<yellow>» Click to edit"
+
+messages:
+  prefix: "<dark_gray>[<green>AShop<dark_gray>] <reset>"
+  no-permission: "<red>You don't have permission to do that."
+  player-only: "<red>Only players can do that."
+  no-economy: "<red>No economy plugin found (install Vault + an economy plugin)."
+  shop-not-found: "<red>No shop named <white><shop></white> exists."
+  shop-created: "<green>Shop <white><shop></white> created and linked to this chest. <gray>Sneak + right-click it to edit."
+  shop-linked: "<green>Chest linked to shop <white><shop></white>."
+  shop-unlinked: "<yellow>Chest unlinked from shop <white><shop></white>."
+  shop-deleted: "<yellow>Shop <white><shop></white> deleted."
+  shop-chest-broken: "<yellow>Shop chest for <white><shop></white> removed. Shop data is kept."
+  cannot-break: "<red>You can't break a shop chest."
+  invalid-name: "<red>Shop names may only contain a-z, 0-9, _ and - (max 32 chars)."
+  not-looking-at-chest: "<red>Look at a chest, trapped chest or barrel (within 5 blocks)."
+  not-a-shop-chest: "<red>That container is not a shop."
+  reloaded: "<green>AdvancedShop reloaded."
+  title-set: "<green>Title of <white><shop></white> updated."
+  rows-set: "<green><shop> now has <white><rows></white> rows."
+  buy-success: "<green>Bought <white><item></white> for <green><price></green>."
+  sell-success: "<green>Sold <white><item></white> for <gold><price></gold>."
+  not-enough-money: "<red>You need <white><price></white> to buy that."
+  not-enough-space: "<red>You don't have enough inventory space."
+  nothing-to-sell: "<red>You don't have enough <white><item></white> to sell."
+  cannot-buy: "<red>This item can't be bought."
+  cannot-sell: "<red>This item can't be sold."
+  already-owned: "<red>You already own that."
+  transaction-failed: "<red>Transaction failed: <white><error>"
+  chat-prompt: "<yellow><prompt> <gray>(type <white>cancel</white> to abort)"
+  chat-cancelled: "<gray>Input cancelled."
+  chat-expired: "<gray>Input timed out."
+  invalid-number: "<red>That isn't a valid number."
+  item-added: "<green>Added item to slot <white><slot></white>. Click it to configure prices."
+  item-deleted: "<yellow>Shop item removed."
+  list-header: "<green>Shops (<count>): <white><shops>"

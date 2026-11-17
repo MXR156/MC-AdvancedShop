@@ -1,0 +1,20 @@
+name: AdvancedShop
+version: '${project.version}'
+main: io.github.mxr156.advancedshop.AdvancedShopPlugin
+api-version: '26.3'
+description: '${project.description}'
+softdepend: [Vault, VaultUnlocked, LuckPerms]
+
+permissions:
+  ashop.admin:
+    description: Create, edit and remove shops.
+    default: op
+    children:
+      ashop.use: true
+      ashop.command.open: true
+  ashop.use:
+    description: Use (buy/sell in) shops.
+    default: true
+  ashop.command.open:
+    description: Open a shop by name with /ashop open <shop>.
+    default: op
